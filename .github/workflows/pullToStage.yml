@@ -1,0 +1,22 @@
+name: Update Stage Branch
+
+on:
+  push:
+    branches: [ "stage" ]
+  pull_request:
+    branches: [ "stage" ]
+
+jobs:
+  push_to_prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy .SSH_KEY
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo -e "Host *\n\tStrictHostKeyChecking no\n\tPort 22\n\n" > ~/.ssh/config
+          echo "${{ vars.SSH_PROD_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - name: pull "stage" from GitHub
+        run: |
+          ssh ${{ vars.SSH_PROD_HOST }} "cd /home/bitrix/ext_www/stage.pharmgeocom.ru/ && make git-pull branch=stage"
